@@ -20,12 +20,24 @@ module "blog_vpc" {
   name = "dev"
   cidr = "10.0.0.0/16"
 
-  azs             = ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
+  azs             = ["eu-west-1a","eu-west-1b","eu-west-1c"]
   public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+
 
   tags = {
     Terraform = "true"
     Environment = "dev"
+  }
+}
+
+resource "aws_instance" "blog" {
+  ami                    = data.aws_ami.app_ami.id
+  instance_type          = var.instance_type
+  subnet_id              = module.blog_vpc.public_subnets[0]
+  vpc_security_group_ids = [module.blog_sg.security_group_id]
+
+  tags = {
+    Name = "Learning Terraform"
   }
 }
 
@@ -39,16 +51,4 @@ module "blog_sg" {
   ingress_cidr_blocks = ["0.0.0.0/0"]
   egress_rules = ["all-all"]
   egress_cidr_blocks = ["0.0.0.0/0"]
-}
-
-resource "aws_instance" "blog" {
-  ami                    = data.aws_ami.app_ami.id
-  instance_type          = var.instance_type
-  subnet_id = module.blog_vpc.public_subnets[0]
-  vpc_security_group_ids = [module.blog_sg.security_group_id]
-
-
-  tags = {
-    Name = "Learning Terraform"
-  }
 }
